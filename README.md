@@ -20,7 +20,9 @@ pip install nuttx-env
 
 ## Usage
 
-```python
+```shell
+# show help
+nginx-env --help
 ```
 
 ## Development
