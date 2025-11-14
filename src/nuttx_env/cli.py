@@ -2,10 +2,14 @@ import argparse
 import os
 import sys
 from enum import StrEnum
+from typing import Callable
+
+from . import handlers
 
 
 class Commands(StrEnum):
     INIT = "init"
+    INFO = "info"
 
 
 def args(args: list[str] | None = None) -> argparse.Namespace:
@@ -31,24 +35,28 @@ def args(args: list[str] | None = None) -> argparse.Namespace:
         help="Initialize empty NuttX environment in current folder"
     )
 
+    # --- Command: info ---
+    cmd_info = subparsers.add_parser(
+        Commands.INFO.value,
+        help="Show information about avaliable Nuttx"
+    )
+    # help="Show information about current NuttX environment"
+
     return parser.parse_args(args)
-
-
-def handle_init():
-    """
-    Handle init command - create empty NuttX environment
-    """
-    return
 
 
 def main():
     """
     Main entry point for 'nuttx-env'
     """
+    handlers_map: dict[Commands, Callable] = {
+        Commands.INIT: handlers.handle_init,
+        Commands.INFO: handlers.handler_info,
+    }
     parsed_args = args()
 
-    if parsed_args.command == Commands.INIT.value:
-        handle_init()
-    else:
+    try:
+        handlers_map.get(Commands(parsed_args.command))()
+    except (KeyError, ValueError):
         print("No command specified. Use --help for available commands.")
         sys.exit(1)
