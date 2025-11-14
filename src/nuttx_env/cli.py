@@ -1,15 +1,24 @@
 import argparse
-import os
+import re
 import sys
 from enum import StrEnum
 from typing import Callable
 
 from . import handlers
+from . import vars
 
 
 class Commands(StrEnum):
     INIT = "init"
     INFO = "info"
+
+
+def regex_type_wrap(pat: re.Pattern) -> Callable[[str], str]:
+    def wrap(arg_value: str):
+        if not pat.match(arg_value.strip()):
+            raise argparse.ArgumentTypeError(f"Invalid value: {arg_value}")
+        return arg_value
+    return wrap
 
 
 def args(args: list[str] | None = None) -> argparse.Namespace:
@@ -34,6 +43,12 @@ def args(args: list[str] | None = None) -> argparse.Namespace:
         Commands.INIT.value,
         help="Initialize empty NuttX environment in current folder"
     )
+    cmd_init.add_argument(
+        "--version",
+        help="NuttX version",
+        type=regex_type_wrap(vars.pattern_nuttx_version),
+        default=vars.NUTTX_VERSION_LATEST
+    )
 
     # --- Command: info ---
     cmd_info = subparsers.add_parser(
@@ -56,7 +71,9 @@ def main():
     parsed_args = args()
 
     try:
-        handlers_map.get(Commands(parsed_args.command))()
+        handlers_map.get(Commands(parsed_args.command))(
+            args=parsed_args
+        )
     except (KeyError, ValueError):
         print("No command specified. Use --help for available commands.")
         sys.exit(1)
