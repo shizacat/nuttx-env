@@ -4,11 +4,12 @@ Utils for work with github
 
 from urllib.parse import urlparse
 from dataclasses import dataclass
+from typing import Generator
 
 import requests
 
 
-GITHUB_API_URL = "https://api.github.com"
+GITHUB_URL_BASE = "https://api.github.com"
 
 
 # --- Models ---
@@ -65,7 +66,7 @@ def get_github_tags(owner: str, repo: str) -> list[GitHubTag]:
     Raises:
         requests.RequestException: If API request fails
     """
-    url = f"{GITHUB_API_URL}/repos/{owner}/{repo}/tags"
+    url = f"{GITHUB_URL_BASE}/repos/{owner}/{repo}/tags"
 
     # TODO: Don't get all, add pages
     response = requests.get(url)
@@ -76,3 +77,45 @@ def get_github_tags(owner: str, repo: str) -> list[GitHubTag]:
         result.append(GitHubTag(name=item["name"]))
 
     return result
+
+
+def gh_download_repo(
+    repo_url: str,
+    tag: str
+) -> Generator[tuple[int, int, bytes], None, None]:
+    """
+    Download GitHub repository archive by tag as zip with progress tracking
+
+    Args:
+        repo_url: GitHub repository URL (e.g., https://github.com/owner/repo)
+        tag: repository tag
+
+    Yields:
+        Tuple of (downloaded_bytes, total_bytes, chunk_data)
+        for progress tracking
+
+    Raises:
+        ValueError: If URL is not a valid GitHub repository URL
+        requests.RequestException: If download fails
+    """
+    owner, repo_name = gh_parse_url(repo_url)
+
+    # GitHub archive URL format:
+    # https://github.com/owner/repo/archive/refs/tags/tag.zip
+    archive_url = (
+        f"https://github.com/{owner}/{repo_name}/archive/refs/tags/{tag}.zip"
+    )
+
+    # Stream the download to track progress
+    response = requests.get(archive_url, stream=True)
+    response.raise_for_status()
+
+    # Get total size from headers
+    total_size = int(response.headers.get('Content-Length', 0))
+    downloaded = 0
+
+    # Yield progress and data chunks
+    for chunk in response.iter_content(chunk_size=8192):
+        if chunk:  # filter out keep-alive chunks
+            downloaded += len(chunk)
+            yield downloaded, total_size, chunk
