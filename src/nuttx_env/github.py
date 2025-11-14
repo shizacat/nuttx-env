@@ -1,6 +1,7 @@
 """
 Utils for work with github
 """
+from __future__ import annotations
 
 from urllib.parse import urlparse
 from dataclasses import dataclass
