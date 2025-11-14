@@ -27,7 +27,8 @@ classifiers = [
 ]
 
 dependencies = [
-    "requests"
+    "requests",
+    "platformdirs",
 ]
 
 [project.optional-dependencies]
