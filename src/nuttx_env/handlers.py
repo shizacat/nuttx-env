@@ -3,7 +3,10 @@ Handlers
 """
 from __future__ import annotations
 
+import os
+import zipfile
 import argparse
+from pathlib import Path
 from dataclasses import dataclass
 
 import platformdirs
@@ -68,12 +71,39 @@ def gh_nuttx_get_tags() -> list[gh.GitHubTag]:
     return gh.get_github_tags(*gh.gh_parse_url(vars.NUTTX_GITHUB_REPO))
 
 
+def unzip_flat(zip_path: Path, extract_to: Path):
+    """
+    Extract zip archiv without first directory
+    """
+    extract_to.mkdir(parents=True, exist_ok=True)
+
+    with zipfile.ZipFile(zip_path, "r") as zf:
+        for member in zf.infolist():
+            # remove first segment path (root directory)
+            parts = Path(member.filename).parts
+            relative = Path(*parts[1:])
+
+            if not relative:
+                continue  # skip root dir
+
+            target = extract_to / relative
+
+            if member.is_dir():
+                target.mkdir(parents=True, exist_ok=True)
+            else:
+                target.parent.mkdir(parents=True, exist_ok=True)
+                with zf.open(member) as src, open(target, "wb") as dst:
+                    dst.write(src.read())
+
+
 # --- Handlers ---
 
 def handle_init(args: argparse.Namespace):
     """
     Handle init command - create empty NuttX environment
     """
+    # TODO: Add check on exists project
+
     # Get version
     if args.version == vars.NUTTX_VERSION_LATEST:
         version = NuttxVersion.from_github_tag(gh_nuttx_get_tags()[0].name)
@@ -115,6 +145,43 @@ def handle_init(args: argparse.Namespace):
         )
     else:
         print(f"Using cached NuttX Apps {version}")
+
+    # Directory structure
+    current_dir = os.getcwd()
+    directories = [
+        "src",
+        "src/my-boards",
+        "src/my-apps",
+    ]
+    files = [
+        ("README.md", ""),
+        (
+            ".gitignore",
+            (
+                "src/nuttx/*\n"
+                "src/apps/*\n"
+            )
+        )
+    ]
+    for directory in directories:
+        dir_path = os.path.join(current_dir, directory)
+        os.makedirs(dir_path, exist_ok=True)
+        print(f"Created directory: {directory}")
+
+    for item in files:
+        file_name, content = item
+        file_path = os.path.join(current_dir, file_name)
+        with open(file_path, "w") as f:
+            f.write(content)
+        print(f"Created file: {file_name}")
+
+    # Extract nuttx
+    print(f"Start extracting: {nuttx_cache_path.name}")
+    unzip_flat(nuttx_cache_path, Path("src/nuttx"))
+
+    # Extract nuttx apps
+    print(f"Start extracting: {nuttx_apps_cache_path.name}")
+    unzip_flat(nuttx_apps_cache_path, Path("src/apps"))
 
 
 def handler_info(args: argparse.Namespace):
