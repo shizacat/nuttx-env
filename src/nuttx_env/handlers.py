@@ -108,7 +108,7 @@ def handle_init(args: argparse.Namespace):
         print(f"Start downloading: {nuttx_apps_cache_path.name}")
         utils.downloader(
             gh.gh_download_repo(
-                repo_url=vars.NUTTX_GITHUB_REPO,
+                repo_url=vars.NUTTX_APPS_GITHUB_REPO,
                 tag=version.to_tag()
             ),
             out=nuttx_apps_cache_path
