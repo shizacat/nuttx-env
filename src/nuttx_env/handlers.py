@@ -88,12 +88,22 @@ def unzip_flat(zip_path: Path, extract_to: Path):
 
             target = extract_to / relative
 
+            # Extract dir or file
             if member.is_dir():
                 target.mkdir(parents=True, exist_ok=True)
             else:
                 target.parent.mkdir(parents=True, exist_ok=True)
                 with zf.open(member) as src, open(target, "wb") as dst:
                     dst.write(src.read())
+
+            # --- Restore permissions ---
+            # upper 16 bits contain UNIX mode
+            perm = member.external_attr >> 16
+            if perm != 0:
+                try:
+                    os.chmod(target, perm)
+                except FileNotFoundError:
+                    pass  # should not happen
 
 
 # --- Handlers ---
