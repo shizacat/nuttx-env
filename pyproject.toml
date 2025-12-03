@@ -50,3 +50,11 @@ nuttx-env = "nuttx_env.cli:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]
+exclude = ["tests", "*test*", "tmp"]
+
+[tool.hatch.build]
+exclude = [
+    "/tmp",
+    "/tmp/**",
+    "/uv.lock"
+]
