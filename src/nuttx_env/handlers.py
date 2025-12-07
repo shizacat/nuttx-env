@@ -236,6 +236,37 @@ def handle_init(args: argparse.Namespace):
                 "./nuttx/*\n"
                 "./apps/*\n"
             )
+        ),
+        (
+            "src/my-boards/Kconfig",
+            (
+                "# Kconfig for my-boards\n"
+                "\n"
+                "choice\n"
+                "\tprompt \"Select target board\"\n"
+                "\tdefault ARCH_BOARD_CUSTOM\n"
+                "\n"
+                "# ---- START USER BOARD CONFIG ----\n"
+                "# Add your board configs here\n"
+                "# ---- END USER BOARD CONFIG ----\n"
+                "\n"
+                "endchoice\n"
+                "\n"
+
+                "config ARCH_BOARD\n"
+                "\tstring\n"
+                "\n"
+                "# ---- START USER BOARD DEFAULT ----\n"
+                "# Set your default board here\n"
+                "# ---- END USER BOARD DEFAULT ----\n"
+                "\n"
+
+                "comment \"Board-Specific Options\"\n"
+                "\n"
+                "# ---- START USER BOARD OPTIONS ----\n"
+                "# Add your board-specific options here\n"
+                "# ---- END USER BOARD OPTIONS ----\n"
+            )
         )
     ]
     for directory in directories:
