@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "nuttx-env"
-version = "0.1.0"
+dynamic = ["version"]
 description = "A Python library for creating and managing project environments for RTOS NuttX"
 readme = "README.md"
 license = {text = "MIT"}
@@ -58,3 +58,6 @@ exclude = [
     "/tmp/**",
     "/uv.lock"
 ]
+
+[tool.hatch.version]
+path = "src/nuttx_env/__init__.py"
