@@ -233,8 +233,8 @@ def handle_init(args: argparse.Namespace):
         (
             "src/.gitignore",
             (
-                "./nuttx/*\n"
-                "./apps/*\n"
+                "nuttx/*\n"
+                "apps/*\n"
             )
         ),
         (
@@ -324,9 +324,7 @@ def handler_board(args: argparse.Namespace):
         if args.name is None:
             raise ValueError("Board name is required for add subcommand")
         board_path = board_find_by_name(
-            args.name,
-            boards_path=Path("src/my-boards")
-        )
+            args.name, boards_path=vars.USER_BOARDS_DIR)
         if board_path is None:
             raise ValueError(f"Board '{args.name}' not exists")
 
@@ -336,22 +334,27 @@ def handler_board(args: argparse.Namespace):
             raise ValueError(
                 "Cannot determine architecture/chip from board path")
         # Check target arh/chip directory
-        target_board_dir = Path("src/nuttx/boards").joinpath(arh_chip)
+        target_board_dir = vars.NUTTX_BOARDS_DIR.joinpath(arh_chip)
         if not target_board_dir.exists():
             raise ValueError(
                 f"Architecture/chip directory not found: {target_board_dir}")
+
         # Create link on board in src/nuttx/boards/<arh>/<chip>/<board name>
         link_path = target_board_dir.joinpath(args.name)
         if link_path.exists():
             print(f"Board link already exists: {link_path}")
-            return
-        os.symlink(
-            os.path.relpath(board_path, start=target_board_dir),
-            link_path,
-            target_is_directory=True
-        )
-        # Add board to Kconfig
-        board_add_to_kconfig(args.name)
+        else:
+            os.symlink(
+                os.path.relpath(board_path, start=target_board_dir),
+                link_path,
+                target_is_directory=True
+            )
+            print(f"Created board link: {link_path} -> {board_path}")
+
+        # Add all board Kconfig to nuttx/boards/Kconfig
+        KConfig(
+            kconfig_path=vars.NUTTX_BOARDS_DIR.joinpath("Kconfig")
+        ).add_board()
 
         print(f"Board '{args.name}' added successfully")
 
