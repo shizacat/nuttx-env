@@ -25,7 +25,6 @@ jobs:
       - name: Set version
         run: |
           sed -i "s/__version__.*/__version__ = \"${GITHUB_REF_NAME}\"/g" src/nuttx_env/__init__.py
-          cat src/nuttx_env/__init__.py
       - name: Build package
         run: python -m build
       - name: Publish package
