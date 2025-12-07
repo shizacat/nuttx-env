@@ -1,16 +1,17 @@
 import argparse
 import re
 import sys
-from enum import StrEnum
+from enum import Enum
 from typing import Callable
 
 from . import handlers
 from . import vars
 
 
-class Commands(StrEnum):
+class Commands(str, Enum):
     INIT = "init"
     INFO = "info"
+    BOARD = "board"
 
 
 def regex_type_wrap(pat: re.Pattern) -> Callable[[str], str]:
@@ -57,6 +58,23 @@ def args(args: list[str] | None = None) -> argparse.Namespace:
     )
     # help="Show information about current NuttX environment"
 
+    # --- Command: board ---
+    cmd_board = subparsers.add_parser(
+        Commands.BOARD.value,
+        help="Manage NuttX boards"
+    )
+    cmd_board.add_argument(
+        "subcommand",
+        help="Board subcommand",
+        choices=["add", "remove", "list"]
+    )
+    cmd_board.add_argument(
+        "--name",
+        help="Board name",
+        type=str,
+        required=False
+    )
+
     return parser.parse_args(args)
 
 
@@ -67,13 +85,19 @@ def main():
     handlers_map: dict[Commands, Callable] = {
         Commands.INIT: handlers.handle_init,
         Commands.INFO: handlers.handler_info,
+        Commands.BOARD: handlers.handler_board,
     }
     parsed_args = args()
 
     try:
-        handlers_map.get(Commands(parsed_args.command))(
-            args=parsed_args
-        )
+        handler = handlers_map.get(Commands(parsed_args.command))
     except (KeyError, ValueError):
         print("No command specified. Use --help for available commands.")
+        sys.exit(1)
+
+    # Call handler
+    try:
+        handler(args=parsed_args)
+    except ValueError as e:
+        print(f"Error: {e}")
         sys.exit(1)
