@@ -267,6 +267,25 @@ def handle_init(args: argparse.Namespace):
                 "# Add your board-specific options here\n"
                 "# ---- END USER BOARD OPTIONS ----\n"
             )
+        ),
+        (
+            "src/my-apps/CMakeLists.txt",
+            (
+                'nuttx_add_subdirectory()\n'
+                "nuttx_generate_kconfig(MENUDESC \"My Apps\")\n"
+            )
+        ),
+        (
+            "src/my-apps/Make.defs",
+            "include $(wildcard $(APPDIR)/my-apps/*/Make.defs)\n"
+        ),
+        (
+            "src/my-apps/Makefiles",
+            (
+                "MENUDESC = \"My Apps\"\n"
+                "\n"
+                "include $(APPDIR)/Directory.mk"
+            )
         )
     ]
     for directory in directories:
