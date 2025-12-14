@@ -286,6 +286,42 @@ def handle_init(args: argparse.Namespace):
                 "\n"
                 "include $(APPDIR)/Directory.mk"
             )
+        ),
+        (
+            "src/my-apps/.gitignore",
+            (
+                "/*.a\n"
+                "/*.dbo\n"
+                "/*.dba\n"
+                "/*.adb\n"
+                "/*.asm\n"
+                "/*.dSYM\n"
+                "/*.exe\n"
+                "/*.gcno\n"
+                "/*.gcda\n"
+                "/*.hobj\n"
+                "/*.i\n"
+                "/*.inf\n"
+                "/*.lib\n"
+                "/*.lst\n"
+                "/*.o\n"
+                "/*.wo\n"
+                "/*.obj\n"
+                "/*.rel\n"
+                "/*.src\n"
+                "/*.swp\n"
+                "/*.sym\n"
+                "/*.su\n"
+                "/*.map\n"
+                "*~\n"
+                "/.built\n"
+                "/.context\n"
+                "/.depend\n"
+                "/.kconfig\n"
+                "/*.lock\n"
+                "/Kconfig\n"
+                ".DS_Store\n"
+            )
         )
     ]
     for directory in directories:
