@@ -321,6 +321,7 @@ def handle_init(args: argparse.Namespace):
                 "/*.lock\n"
                 "/Kconfig\n"
                 ".DS_Store\n"
+                "Make.dep\n"
             )
         )
     ]
