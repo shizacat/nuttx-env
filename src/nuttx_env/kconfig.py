@@ -283,11 +283,21 @@ class KConfig:
 
         Return line number
         """
-        return self._get_last_line_number_in_section(
-            lines=lines,
-            marker_start='choice',
-            marker_end='endchoice'
-        )
+        try:
+            # Correct for 12.12.0
+            return self._get_last_line_number_in_section(
+                lines=lines,
+                marker_start='choice',
+                marker_end='endchoice # Select target board'
+            )
+        except ValueError:
+            # Got filter error
+            # Correct for 12.11.0
+            return self._get_last_line_number_in_section(
+                lines=lines,
+                marker_start='choice',
+                marker_end='endchoice'
+            )
 
     def _find_place_default_to_insert(self, lines: list[str]) -> int:
         """
