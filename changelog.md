@@ -9,6 +9,11 @@ Stages: Added, Changed, Removed, Fixed
 
 ## [Unreleased]
 
+## [0.2.2] - 2026-01-18
+
+- Fix section filter for nuttx 12.12.0
+- Fix file name src/my-apps/Makefile
+
 ## [0.2.1] - 2026-01-18
 
 ### Added
