@@ -280,7 +280,7 @@ def handle_init(args: argparse.Namespace):
             "include $(wildcard $(APPDIR)/my-apps/*/Make.defs)\n"
         ),
         (
-            "src/my-apps/Makefiles",
+            "src/my-apps/Makefile",
             (
                 "MENUDESC = \"My Apps\"\n"
                 "\n"
@@ -372,6 +372,9 @@ def handler_info(args: argparse.Namespace):
 def handler_board(args: argparse.Namespace):
     """
     Handler board command
+
+    Raises:
+        ValueError
     """
     if args.subcommand == "add":
         """
