@@ -9,6 +9,8 @@ Stages: Added, Changed, Removed, Fixed
 
 ## [Unreleased]
 
+## [0.2.1] - 2026-01-18
+
 ### Added
 
 - Add template for my-apps
