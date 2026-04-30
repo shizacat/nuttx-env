@@ -10,7 +10,7 @@ import argparse
 import platformdirs
 
 from .base import BaseHandler
-from .methods import gh_nuttx_get_tags, unzip_flat, NuttxVersion
+from .methods import gh_nuttx_get_tags, unzip_flat, NuttxVersion, NuttxCommit
 from nuttx_env.utils import regex_type_wrap
 from nuttx_env import vars
 from nuttx_env import github as gh
@@ -28,32 +28,38 @@ class InitHandler(BaseHandler):
     def execute(self, args):
         """
         Execute the 'init' command with provided arguments.
+
+        Raises
+            ValueError
+                - If NuttX version or commit hash is invalid
         """
         # TODO: Add check on exists project
 
         # Get nuttx version
-        if args.version == vars.NUTTX_VERSION_LATEST:
-            version = NuttxVersion.from_github_tag(gh_nuttx_get_tags()[0].name)
-        else:
-            version = NuttxVersion.from_version(args.version)
+        version, nuttx_commit = self._get_nuttx_version(args)
 
         # Check archiv nuttx
+        nuttx_ref = nuttx_commit or version
         nuttx_cache_path = platformdirs.user_cache_path(
             appname=__app_name__, ensure_exists=True
         ).joinpath(
-            vars.NUTTX_ARCHIV_NAME.format(version=version)
+            vars.NUTTX_ARCHIV_NAME.format(version=nuttx_ref)
         )
         if not nuttx_cache_path.exists():
             print(f"Start downloading: {nuttx_cache_path.name}")
-            utils.downloader(
-                gh.gh_download_repo(
+            if isinstance(nuttx_ref, NuttxCommit):
+                dh = gh.gh_download_repo_by_commit(
                     repo_url=vars.NUTTX_GITHUB_REPO,
-                    tag=version.to_tag()
-                ),
-                out=nuttx_cache_path
-            )
+                    commit=nuttx_ref.to_commit()
+                )
+            else:
+                dh = gh.gh_download_repo(
+                    repo_url=vars.NUTTX_GITHUB_REPO,
+                    tag=nuttx_ref.to_tag()
+                )
+            utils.downloader(dh, out=nuttx_cache_path)
         else:
-            print(f"Using cached NuttX {version}")
+            print(f"Using cached NuttX {nuttx_ref}")
 
         # Check archiv nuttx-apps
         nuttx_apps_cache_path = platformdirs.user_cache_path(
@@ -215,3 +221,39 @@ class InitHandler(BaseHandler):
             type=regex_type_wrap(vars.pattern_nuttx_version),
             default=vars.NUTTX_VERSION_LATEST
         )
+        parser.add_argument(
+            "--nuttx-commit",
+            help="NuttX commit hash (7–40 hex digits, Git SHA-1).",
+            type=regex_type_wrap(vars.pattern_git_commit_hash),
+            required=False,
+        )
+
+    # --- Private methods ---
+
+    def _get_nuttx_version(
+        self, args: argparse.Namespace
+    ) -> tuple[NuttxVersion, NuttxCommit | None]:
+        """
+        Get NuttX version.
+
+        Raises
+            ValueError
+                - If NuttX commit hash is invalid
+                - If NuttX version is invalid
+                - If NuttX version is not found
+
+        Returns
+            Nuttx version, NuttX commit hash
+        """
+        nuttx_commit = None
+        nuttx_version = None
+
+        if args.nuttx_commit:
+            nuttx_commit = NuttxCommit.from_commit(args.nuttx_commit)
+
+        if args.version == vars.NUTTX_VERSION_LATEST:
+            nuttx_version = NuttxVersion.from_github_tag(gh_nuttx_get_tags()[0].name)
+        else:
+            nuttx_version = NuttxVersion.from_version(args.version)
+
+        return nuttx_version, nuttx_commit

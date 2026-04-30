@@ -120,3 +120,45 @@ def gh_download_repo(
         if chunk:  # filter out keep-alive chunks
             downloaded += len(chunk)
             yield downloaded, total_size, chunk
+
+
+def gh_download_repo_by_commit(
+    repo_url: str,
+    commit: str
+) -> Generator[tuple[int, int, bytes], None, None]:
+    """
+    Download GitHub repository archive by commit as zip with progress tracking
+
+    Args:
+        repo_url: GitHub repository URL (e.g., https://github.com/owner/repo)
+        tag: repository tag
+
+    Yields:
+        Tuple of (downloaded_bytes, total_bytes, chunk_data)
+        for progress tracking
+
+    Raises:
+        ValueError: If URL is not a valid GitHub repository URL
+        requests.RequestException: If download fails
+    """
+    owner, repo_name = gh_parse_url(repo_url)
+
+    # GitHub archive URL format:
+    # https://github.com/owner/repo/archive/refs/tags/tag.zip
+    archive_url = (
+        f"https://github.com/{owner}/{repo_name}/archive/{commit}.zip"
+    )
+
+    # Stream the download to track progress
+    response = requests.get(archive_url, stream=True)
+    response.raise_for_status()
+
+    # Get total size from headers
+    total_size = int(response.headers.get('Content-Length', 0))
+    downloaded = 0
+
+    # Yield progress and data chunks
+    for chunk in response.iter_content(chunk_size=8192):
+        if chunk:  # filter out keep-alive chunks
+            downloaded += len(chunk)
+            yield downloaded, total_size, chunk

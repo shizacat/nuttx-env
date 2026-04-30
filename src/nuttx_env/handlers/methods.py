@@ -58,6 +58,32 @@ class NuttxVersion():
         return f"{self.version}{rc}"
 
 
+@dataclass
+class NuttxCommit():
+    commit: str
+
+    @staticmethod
+    def from_commit(commit: str) -> "NuttxCommit":
+        """
+        Create from commit hash
+
+        Raises
+            ValueError
+        """
+        if not vars.pattern_git_commit_hash.match(commit):
+            raise ValueError("Wrong commit hash format")
+        return NuttxCommit(commit=commit)
+
+    def to_commit(self) -> str:
+        """
+        Return commit in format git tag repository
+        """
+        return f"{self.commit}"
+
+    def __str__(self):
+        return self.commit
+
+
 def gh_nuttx_get_tags() -> list[gh.GitHubTag]:
     """
     Retrun all tags from NuttX repository

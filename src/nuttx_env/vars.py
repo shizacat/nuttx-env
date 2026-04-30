@@ -24,6 +24,9 @@ pattern_nuttx_tag = re.compile(
     rf"^nuttx-{REGEX_NUTTX_VERSION}(?:-{REGEX_NUTTX_RC})?$"
 )
 
+# Git SHA-1 object id: short (≥7) or full (40) hex digits
+pattern_git_commit_hash = re.compile(r"^[0-9a-fA-F]{7,40}$")
+
 
 # --- Application ---
 

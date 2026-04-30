@@ -12,6 +12,9 @@ Stages: Added, Changed, Removed, Fixed
 ### Changed
 - Update handlers subsystem. Now it base on classes
 
+### Added
+- Add support for NuttX commit hash
+
 
 ## [0.2.2] - 2026-01-18
 
