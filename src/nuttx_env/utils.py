@@ -6,7 +6,9 @@ from __future__ import annotations
 import sys
 import time
 from pathlib import Path
-from typing import Generator
+from typing import Generator, Callable
+import argparse
+import re
 
 
 def downloader(
@@ -66,3 +68,11 @@ def downloader(
         raise
 
     sys.stdout.write("\nDone!\n")
+
+
+def regex_type_wrap(pat: re.Pattern) -> Callable[[str], str]:
+    def wrap(arg_value: str):
+        if not pat.match(arg_value.strip()):
+            raise argparse.ArgumentTypeError(f"Invalid value: {arg_value}")
+        return arg_value
+    return wrap

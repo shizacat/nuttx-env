@@ -9,6 +9,10 @@ Stages: Added, Changed, Removed, Fixed
 
 ## [Unreleased]
 
+### Changed
+- Update handlers subsystem. Now it base on classes
+
+
 ## [0.2.2] - 2026-01-18
 
 - Fix section filter for nuttx 12.12.0
