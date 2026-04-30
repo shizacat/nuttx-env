@@ -9,6 +9,8 @@ Stages: Added, Changed, Removed, Fixed
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-04-30
+
 ### Changed
 - Update handlers subsystem. Now it base on classes
 
